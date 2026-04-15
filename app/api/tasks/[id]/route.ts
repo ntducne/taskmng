@@ -3,14 +3,17 @@ import { connectDB } from "@/lib/mongodb";
 import Task from "@/models/Task";
 import { TaskSchema } from "@/schemas/taskSchema";
 
-export async function GET(req: Request, { params }: { params: { id: string } }) {
+export async function GET(
+    req: Request, 
+    { params }: { params: Promise<{ id: string }> }
+) {
     try {
         await connectDB();
-        const request = await params
-        const task = await Task.findOne({ task_id: request.id });
+        const { id } = await params; 
+        const task = await Task.findOne({ task_id: id });
         if (!task) {
             return NextResponse.json(
-                { error: `Không tìm thấy thông tin cho Task ID: ${request.id}` }, 
+                { error: `Không tìm thấy thông tin cho Task ID: ${id}` }, 
                 { status: 404 }
             );
         }
@@ -20,17 +23,20 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
     }
 }
 
-export async function PUT(req: Request, { params }: { params: { id: string } }) {
+export async function PUT(
+    req: Request, 
+    { params }: { params: Promise<{ id: string }> }
+) {
     try {
         await connectDB();
+        const { id } = await params; 
         const body = await req.json();
-        const request = await params
         const validation = TaskSchema.partial().safeParse(body);
         if (!validation.success) {
             return NextResponse.json({ errors: validation.error.format() }, { status: 400 });
         }
         const newTaskId = validation.data.task_id;
-        if (newTaskId && newTaskId !== request.id) {
+        if (newTaskId && newTaskId !== id) {
             const isDuplicate = await Task.findOne({ task_id: newTaskId });
             if (isDuplicate) {
                 return NextResponse.json(
@@ -40,9 +46,9 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
             }
         }
         const updatedTask = await Task.findOneAndUpdate(
-            { task_id: request.id }, 
+            { task_id: id },
             validation.data,
-            { new: true }
+            { new: true } 
         );
         if (!updatedTask) {
             return NextResponse.json({ error: "Không tìm thấy Task để cập nhật" }, { status: 404 });
@@ -56,18 +62,21 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
     }
 }
 
-export async function DELETE(req: Request, { params }: { params: { id: string } }) {
+export async function DELETE(
+    req: Request, 
+    { params }: { params: Promise<{ id: string }> }
+) {
     try {
         await connectDB();
-        const request = await params
-        const existingTask = await Task.findOne({ task_id: request.id });
+        const { id } = await params;
+        const existingTask = await Task.findOne({ task_id: id });
         if (!existingTask) {
             return NextResponse.json(
-                { error: `Không thể xóa. Task ID ${request.id} không tồn tại hoặc đã bị xóa trước đó.` }, 
+                { error: `Không thể xóa. Task ID ${id} không tồn tại hoặc đã bị xóa trước đó.` }, 
                 { status: 404 }
             );
         }
-        await Task.findOneAndDelete({ task_id: request.id });
+        await Task.findOneAndDelete({ task_id: id });
         return NextResponse.json({ message: "Xóa thành công" });
     } catch (error: any) {
         return NextResponse.json({ error: "Lỗi Server" }, { status: 500 });
