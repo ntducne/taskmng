@@ -5,7 +5,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { columns } from "@/schemas/column";
 import { ITask } from "@/types/task";
 import { createTask, deleteTask, fetchTaskAnalysis, fetchTaskById, fetchTasks, updateTask } from "@/services/services";
-import { ArrowUpRightFromSquare, CircleCheckFill, CircleFill, Magnifier, Pencil, SquarePlus, TrashBin } from "@gravity-ui/icons";
+import { ArrowUpRightFromSquare, CircleCheckFill, CircleFill, Magnifier, Pencil, TrashBin } from "@gravity-ui/icons";
 import { parseDate } from "@internationalized/date";
 
 const ROWS_PER_PAGE = 10;
@@ -84,6 +84,7 @@ export default function Home() {
 
   const refreshData = async () => {
     setLoading(true);
+    closeDialog();
     await getData();
     await getAnalysisData();
     setLoading(false);
@@ -91,6 +92,7 @@ export default function Home() {
 
   const getDetail = async (task_id: string) => {
     try {
+      setLoading(true);
       const data = await fetchTaskById(task_id);
       setDetailItem(data);
       setDefaultItem({
@@ -111,6 +113,8 @@ export default function Home() {
       setIsOpen(true);
     } catch (err) {
       console.error("Failed to fetch analysis data: ", err);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -274,7 +278,7 @@ export default function Home() {
   return (<>
     {
       loading ? (
-        <div className="w-dvw h-dvh bg-black/30 fixed top-0 z-50 flex items-center justify-center">
+        <div className="w-dvw h-dvh bg-black/30 fixed top-0 z-[99999] flex items-center justify-center">
           <Spinner color="accent" />
         </div>
       ) : null
@@ -543,7 +547,7 @@ export default function Home() {
                   Cancel
                 </Button>
                 <Button type="submit" variant="primary">
-                  Submit
+                  {detailItem ? "Save Changes" : "Create Task"}
                 </Button>
               </div>
             </Form>
