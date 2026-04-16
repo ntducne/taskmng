@@ -12,13 +12,34 @@ export async function GET() {
                     _id: null,
                     total: { $sum: 1 },
                     totalBugs: { $sum: "$bug" },
-                    waitingLocal: { $sum: { $cond: [{ $eq: ["$local_test", 0] }, 1, 0] } },
-                    waitingDev: { $sum: { $cond: [{ $eq: ["$develop_test", 0] }, 1, 0] } },
-                    waitingProd: { $sum: { $cond: [{ $eq: ["$production_test", 0] }, 1, 0] } },
-                    doneLocal: { $sum: { $cond: [{ $eq: ["$local_test", 1] }, 1, 0] } },
-                    doneDev: { $sum: { $cond: [{ $eq: ["$develop_test", 1] }, 1, 0] } },
-                    doneProd: { $sum: { $cond: [{ $eq: ["$production_test", 1] }, 1, 0] } },
-                    codingWaiting: { $sum: { $cond: [{ $eq: ["$coding", 0] }, 1, 0] } },
+
+                    currentlyCoding: { $sum: { $cond: [{ 
+                        $eq: ["$task_status", 0] 
+                    }, 1, 0] } },
+
+                    waitingForLocalTesting: { $sum: { $cond: [{ 
+                        $eq: ["$task_status", 1] 
+                    }, 1, 0] } },
+
+                    waitingForDevelopTesting: { $sum: { $cond: [{ 
+                        $eq: ["$task_status", 2] 
+                    }, 1, 0] } },
+
+                    waitingForProductionTesting: { $sum: { $cond: [{ 
+                        $eq: ["$task_status", 3] 
+                    }, 1, 0] } },
+
+                    localTestingDone: { $sum: { $cond: [{ 
+                        $gte: ["$task_status", 2] 
+                    }, 1, 0] } },
+
+                    developTestingDone: { $sum: { $cond: [{ 
+                        $gte: ["$task_status", 3] 
+                    }, 1, 0] } },
+
+                    productionTestingDone: { $sum: { $cond: [{ 
+                        $gte: ["$task_status", 4] 
+                    }, 1, 0] } },
                 },
             },
         ]);
@@ -26,17 +47,17 @@ export async function GET() {
         const result = stats[0] || {};
 
         return NextResponse.json({
-            coding: result.codingWaiting || 0,
+            coding: result.currentlyCoding || 0,
             bugs: result.totalBugs || 0,
             waiting_test: {
-                local: result.waitingLocal || 0,
-                develop: result.waitingDev || 0,
-                production: result.waitingProd || 0,
+                local: result.waitingForLocalTesting || 0,
+                develop: result.waitingForDevelopTesting || 0,
+                production: result.waitingForProductionTesting || 0,
             },
             testing: {
-                local: result.doneLocal || 0,
-                develop: result.doneDev || 0,
-                production: result.doneProd || 0,
+                local: result.localTestingDone || 0,
+                develop: result.developTestingDone || 0,
+                production: result.productionTestingDone || 0,
             },
             total: result.total || 0,
         });
