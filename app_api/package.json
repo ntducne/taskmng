@@ -1,0 +1,20 @@
+{
+  "name": "app_api",
+  "version": "1.0.50",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "bun run --watch src/index.ts"
+  },
+  "dependencies": {
+    "@elysiajs/bearer": "^1.4.3",
+    "@elysiajs/jwt": "^1.4.1",
+    "dotenv": "^17.4.2",
+    "elysia": "^1.4.28",
+    "mongoose": "^9.4.1",
+    "zod": "^4.3.6"
+  },
+  "devDependencies": {
+    "bun-types": "latest"
+  },
+  "module": "src/index.js"
+}

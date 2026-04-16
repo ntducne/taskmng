@@ -1,0 +1,4 @@
+export const ERROR_CODE = {
+    TASK_NOT_FOUND: 'TASK_NOT_FOUND',
+    TASK_ID_ALREADY_EXISTS: 'TASK_ID_ALREADY_EXISTS'
+} as const
