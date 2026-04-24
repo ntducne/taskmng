@@ -4,7 +4,8 @@ import {
     CreateTaskSchema,
     UpdateTaskSchema,
     TaskParamsSchema,
-    GetTasksQuerySchema
+    GetTasksQuerySchema,
+    GetTasksQueryInput
 } from '../schemas/task.schema'
 import { TaskRepository } from '../repositories/task.repository'
 import { TaskService } from '../services/task.service'
@@ -16,7 +17,7 @@ const taskController = new TaskController(taskService)
 
 export const taskRoute = new Elysia({ prefix: '/tasks' })
     .use(authMiddleware)
-    .get('/', ({ query }) => TaskController.getAllTasks(query), {
+    .get('/', ({ query }: any) => taskController.getAllTasks(query as GetTasksQueryInput), {
         query: GetTasksQuerySchema
     })
     .get('/:task_id', ({ params }) => taskController.getTaskById(params.task_id), {

@@ -7,7 +7,7 @@ import { taskRoute } from './routes/task.route'
 
 await connectDB()
 
-const app = new Elysia({ prefix: '/api' })
+new Elysia({ prefix: '/api' })
     .onError(({ error, set }) => {
         if (error instanceof AppError) {
             set.status = error.statusCode

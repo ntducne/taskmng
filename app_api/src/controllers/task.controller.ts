@@ -9,6 +9,7 @@ export class TaskController {
     constructor(private readonly taskService: TaskService) {}
 
     getAllTasks = async (query: GetTasksQueryInput) => {
+        console.log(1)
         const result = await this.taskService.getAllTasks(query)
 
         return {

@@ -3,33 +3,29 @@ import { bearer } from '@elysiajs/bearer'
 import { jwt } from '@elysiajs/jwt'
 import { env } from '../config/env'
 import { AppError } from '../utils/app-error'
+import { UserModel } from '../models/user.model'
+import { BlacklistModel } from '../models/blacklist.model'
+import { sha256 } from '../utils/hash'
 
-export type JwtUserPayload = {
-    sub: string
-    task_id?: string
-    role?: string
+const authMiddleware = (app: Elysia) => {
+    app
+        .use(bearer())
+        .use(jwt({ name: 'jwt', secret: env.JWT_SECRET }))
+        .resolve(async ({ bearer, jwt }) => {
+            if (!bearer) throw new AppError('Unauthorized', 401)
+            const payload = await jwt.verify(bearer)
+            if (!payload) throw new AppError('Invalid token', 401)
+            const black = await BlacklistModel.exists({
+                token_hash: sha256(bearer)
+            })
+            if (black) throw new AppError('Token revoked', 401)
+            const user = await UserModel.findById(payload.sub)
+            if (!user) throw new AppError('User not found', 401)
+            return {
+                user,
+                accessToken: bearer
+            }
+        })
 }
 
-export const authMiddleware = new Elysia({ name: 'auth-middleware' })
-    .use(bearer())
-    .use(
-        jwt({
-            name: 'jwt',
-            secret: env.JWT_SECRET
-        })
-    )
-    .resolve(async ({ bearer, jwt }) => {
-        if (!bearer) {
-            throw new AppError('Unauthorized', 401, 'UNAUTHORIZED')
-        }
-
-        const payload = await jwt.verify(bearer)
-
-        if (!payload) {
-            throw new AppError('Invalid token', 401, 'INVALID_TOKEN')
-        }
-
-        return {
-            user: payload as JwtUserPayload
-        }
-    })
+export { authMiddleware };  
