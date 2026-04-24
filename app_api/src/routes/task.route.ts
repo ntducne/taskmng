@@ -1,5 +1,4 @@
 import { Elysia } from 'elysia'
-import { authMiddleware } from '../middlewares/auth.middleware'
 import {
     CreateTaskSchema,
     UpdateTaskSchema,
@@ -16,7 +15,6 @@ const taskService = new TaskService(taskRepository)
 const taskController = new TaskController(taskService)
 
 export const taskRoute = new Elysia({ prefix: '/tasks' })
-    .use(authMiddleware)
     .get('/', ({ query }: any) => taskController.getAllTasks(query as GetTasksQueryInput), {
         query: GetTasksQuerySchema
     })
